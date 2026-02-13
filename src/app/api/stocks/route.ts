@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { INDEX_CONFIGS, MIN_GAIN_PERCENT } from "@/lib/constants";
+import { INDEX_CONFIGS, MIN_GAIN_PERCENT, MIN_STOCK_PRICE } from "@/lib/constants";
 import { fetchConstituents, fetchBatchQuotes } from "@/lib/stocks";
 import type {
   IndexConstituent,
@@ -29,6 +29,7 @@ function buildIndexData(
       quote.adjusted_previous_close || quote.previous_close
     );
     if (!prevClose || prevClose === 0) continue;
+    if (price < MIN_STOCK_PRICE) continue;
 
     const changeAmount = price - prevClose;
     const changePercent = (changeAmount / prevClose) * 100;

@@ -35,3 +35,4 @@ export const ROBINHOOD_HISTORICALS_URL =
 export const ROBINHOOD_FUNDAMENTALS_URL =
   "https://api.robinhood.com/fundamentals/";
 export const MIN_DRAWDOWN_PERCENT = 20;
+export const MIN_STOCK_PRICE = 10;

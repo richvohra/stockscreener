@@ -4,6 +4,7 @@ import {
   ROBINHOOD_HISTORICALS_URL,
   ROBINHOOD_FUNDAMENTALS_URL,
   MIN_DRAWDOWN_PERCENT,
+  MIN_STOCK_PRICE,
 } from "@/lib/constants";
 import { fetchConstituents, fetchBatchQuotes } from "@/lib/stocks";
 import type {
@@ -115,6 +116,7 @@ export async function GET() {
           quote.adjusted_previous_close || quote.previous_close
         );
         if (!prevClose || prevClose === 0) continue;
+        if (price < MIN_STOCK_PRICE) continue;
 
         const histResult = historicalResults[j];
         if (histResult.status !== "fulfilled" || !histResult.value) continue;
