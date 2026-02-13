@@ -7,9 +7,48 @@ import type {
   GameState,
   ScoreboardData,
   TeamScore,
+  TeamLeader,
 } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+/**
+ * Get today's date in Eastern Time as YYYYMMDD for the ESPN API.
+ * ESPN's default scoreboard returns the last game day, not necessarily today.
+ * By explicitly passing today's date, we always get today's games (or an empty
+ * list if there are none, e.g. All-Star break).
+ */
+function getTodayET(): string {
+  const now = new Date();
+  const etDate = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/New_York" })
+  );
+  const yyyy = etDate.getFullYear();
+  const mm = String(etDate.getMonth() + 1).padStart(2, "0");
+  const dd = String(etDate.getDate()).padStart(2, "0");
+  return `${yyyy}${mm}${dd}`;
+}
+
+function getTodayISOET(): string {
+  const today = getTodayET();
+  return `${today.slice(0, 4)}-${today.slice(4, 6)}-${today.slice(6, 8)}`;
+}
+
+function mapLeaders(c: ESPNCompetitor): TeamLeader[] {
+  if (!c.leaders) return [];
+  return c.leaders
+    .filter((cat) => ["points", "rebounds", "assists"].includes(cat.name))
+    .map((cat) => {
+      const top = cat.leaders[0];
+      return {
+        category: cat.name,
+        displayCategory: cat.displayName,
+        playerName: top.athlete.shortName,
+        value: top.displayValue,
+        headshot: top.athlete.headshot,
+      };
+    });
+}
 
 function mapCompetitor(c: ESPNCompetitor): TeamScore {
   const score = parseInt(c.score, 10);
@@ -25,12 +64,16 @@ function mapCompetitor(c: ESPNCompetitor): TeamScore {
       c.records?.find((r) => r.type === "total")?.summary ?? null,
     isWinner: c.winner,
     linescores: c.linescores?.map((ls) => ls.value) ?? [],
+    leaders: mapLeaders(c),
   };
 }
 
 export async function GET() {
   try {
-    const res = await fetch(ESPN_SCOREBOARD_URL, {
+    const todayParam = getTodayET();
+    const url = `${ESPN_SCOREBOARD_URL}?dates=${todayParam}`;
+
+    const res = await fetch(url, {
       next: { revalidate: 0 },
     });
 
@@ -66,7 +109,7 @@ export async function GET() {
     });
 
     const payload: ScoreboardData = {
-      date: data.day?.date ?? new Date().toISOString().split("T")[0],
+      date: data.day?.date ?? getTodayISOET(),
       games,
       fetchedAt: new Date().toISOString(),
     };

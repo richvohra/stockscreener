@@ -25,20 +25,20 @@ export function Header({
   return (
     <header className="text-center mb-8">
       <div className="flex items-center justify-center gap-3 mb-2">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-white">
+        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">
           NBA Scores
         </h1>
         {hasLiveGames && (
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-400 bg-green-500/15 px-2.5 py-1 rounded-full">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-live-pulse" />
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-600 bg-green-100 px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-live-pulse" />
             LIVE
           </span>
         )}
       </div>
       {date && (
-        <p className="text-zinc-400 text-sm">{formatDate(date)}</p>
+        <p className="text-gray-500 text-sm">{formatDate(date)}</p>
       )}
-      <div className="flex items-center justify-center gap-3 mt-2 text-xs text-zinc-500">
+      <div className="flex items-center justify-center gap-3 mt-2 text-xs text-gray-400">
         {gamesCount > 0 && (
           <span>
             {gamesCount} {gamesCount === 1 ? "Game" : "Games"} Today
@@ -46,7 +46,7 @@ export function Header({
         )}
         {lastRefresh && (
           <>
-            <span className="text-zinc-700">|</span>
+            <span className="text-gray-300">|</span>
             <span>Updated {timeAgo(lastRefresh)}</span>
           </>
         )}

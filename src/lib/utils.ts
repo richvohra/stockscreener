@@ -32,21 +32,55 @@ export function formatStartTime(isoDate: string): string {
 export function getStatusColor(state: GameState): string {
   switch (state) {
     case "in":
-      return "text-green-400";
+      return "text-green-600";
     case "post":
-      return "text-zinc-500";
+      return "text-gray-500";
     case "pre":
-      return "text-blue-400";
+      return "text-blue-600";
   }
 }
 
 export function getStatusBgColor(state: GameState): string {
   switch (state) {
     case "in":
-      return "bg-green-500/20 text-green-400";
+      return "bg-green-100 text-green-700";
     case "post":
-      return "bg-zinc-700/50 text-zinc-400";
+      return "bg-gray-100 text-gray-500";
     case "pre":
-      return "bg-blue-500/20 text-blue-400";
+      return "bg-blue-100 text-blue-700";
   }
+}
+
+export function formatCurrency(value: number): string {
+  return value.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+export function formatPercent(value: number): string {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+}
+
+export function isMarketOpen(): boolean {
+  const now = new Date();
+  const et = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/New_York" })
+  );
+  const day = et.getDay();
+  if (day === 0 || day === 6) return false;
+  const hours = et.getHours();
+  const minutes = et.getMinutes();
+  const totalMinutes = hours * 60 + minutes;
+  // Market open 9:30 AM - 4:00 PM ET
+  return totalMinutes >= 570 && totalMinutes < 960;
+}
+
+export function getGainIntensity(percent: number): string {
+  if (percent >= 10) return "bg-green-200 text-green-900 border-green-300";
+  if (percent >= 7) return "bg-green-150 text-green-800 border-green-250";
+  if (percent >= 5) return "bg-green-100 text-green-800 border-green-200";
+  return "bg-green-50 text-green-700 border-green-100";
 }

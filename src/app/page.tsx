@@ -1,9 +1,9 @@
-import { Scoreboard } from "@/components/Scoreboard";
+import { Chat } from "@/components/Chat";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-zinc-950">
-      <Scoreboard />
+    <main className="h-screen bg-zinc-950">
+      <Chat />
     </main>
   );
 }

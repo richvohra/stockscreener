@@ -13,13 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NBA Live Scores",
-  description: "Live NBA game scores, updated every 30 seconds",
-  openGraph: {
-    title: "NBA Live Scores",
-    description: "Live NBA game scores, updated every 30 seconds",
-    type: "website",
-  },
+  title: "Vohra Code",
+  description: "AI chat interface powered by Claude",
 };
 
 export default function RootLayout({
@@ -28,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
