@@ -1,12 +1,19 @@
 import type { StockQuote } from "@/lib/types";
 import { formatCurrency, formatPercent } from "@/lib/utils";
 
-export function StockCard({ stock }: { stock: StockQuote }) {
+export function StockCard({
+  stock,
+  onClickChart,
+}: {
+  stock: StockQuote;
+  onClickChart?: (symbol: string) => void;
+}) {
   const intensityClass = getIntensityClass(stock.changePercent);
 
   return (
     <div
-      className={`rounded-lg border p-4 transition-all hover:shadow-md ${intensityClass}`}
+      className={`rounded-lg border p-4 transition-all hover:shadow-md ${intensityClass} ${onClickChart ? "cursor-pointer" : ""}`}
+      onClick={() => onClickChart?.(stock.symbol)}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">

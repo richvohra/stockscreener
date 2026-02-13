@@ -84,3 +84,14 @@ export function getGainIntensity(percent: number): string {
   if (percent >= 5) return "bg-green-100 text-green-800 border-green-200";
   return "bg-green-50 text-green-700 border-green-100";
 }
+
+export function formatMarketCap(value: number): string {
+  if (value >= 1e12) return `$${(value / 1e12).toFixed(1)}T`;
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(0)}M`;
+  return `$${value.toLocaleString()}`;
+}
+
+export function formatDrawdown(value: number): string {
+  return `-${value.toFixed(1)}%`;
+}

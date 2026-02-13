@@ -11,7 +11,13 @@ const INDEX_COLORS: Record<string, string> = {
   russell2000: "from-rose-600 to-rose-700",
 };
 
-export function IndexSection({ index }: { index: IndexData }) {
+export function IndexSection({
+  index,
+  onClickChart,
+}: {
+  index: IndexData;
+  onClickChart?: (symbol: string) => void;
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const gradient = INDEX_COLORS[index.name] || "from-gray-600 to-gray-700";
   const hasStocks = index.stocks.length > 0;
@@ -58,7 +64,7 @@ export function IndexSection({ index }: { index: IndexData }) {
         <div className="bg-white border border-t-0 border-gray-200 rounded-b-lg p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {index.stocks.map((stock) => (
-              <StockCard key={stock.symbol} stock={stock} />
+              <StockCard key={stock.symbol} stock={stock} onClickChart={onClickChart} />
             ))}
           </div>
         </div>

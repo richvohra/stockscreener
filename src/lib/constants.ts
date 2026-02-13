@@ -26,3 +26,12 @@ export const INDEX_CONFIGS = [
   { key: "dowjones", name: "Dow Jones", file: "constituents-dowjones.json", format: "json" as const },
   { key: "russell2000", name: "Russell 2000", file: "", format: "csv" as const },
 ];
+
+// Value Picks
+export const API_VALUE_PICKS_PATH = "/api/stocks/value-picks";
+export const VALUE_PICKS_POLLING_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+export const ROBINHOOD_HISTORICALS_URL =
+  "https://api.robinhood.com/quotes/historicals/";
+export const ROBINHOOD_FUNDAMENTALS_URL =
+  "https://api.robinhood.com/fundamentals/";
+export const MIN_DRAWDOWN_PERCENT = 20;

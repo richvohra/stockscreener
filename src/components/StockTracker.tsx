@@ -6,12 +6,15 @@ import type { StockTrackerData } from "@/lib/types";
 import { StockTrackerHeader } from "./StockTrackerHeader";
 import { IndexSection } from "./IndexSection";
 import { StockCardSkeleton } from "./StockCardSkeleton";
+import { StockChartModal } from "./StockChartModal";
+import { ValuePicks } from "./ValuePicks";
 
 export function StockTracker() {
   const [data, setData] = useState<StockTrackerData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
+  const [chartSymbol, setChartSymbol] = useState<string | null>(null);
 
   const fetchStocks = useCallback(async () => {
     try {
@@ -104,9 +107,20 @@ export function StockTracker() {
       {data && (
         <div>
           {data.indices.map((index) => (
-            <IndexSection key={index.name} index={index} />
+            <IndexSection key={index.name} index={index} onClickChart={setChartSymbol} />
           ))}
+
+          {/* Beaten Down Value Picks */}
+          <ValuePicks onClickChart={setChartSymbol} />
         </div>
+      )}
+
+      {/* Chart Modal */}
+      {chartSymbol && (
+        <StockChartModal
+          symbol={chartSymbol}
+          onClose={() => setChartSymbol(null)}
+        />
       )}
     </div>
   );

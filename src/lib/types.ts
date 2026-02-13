@@ -313,3 +313,56 @@ export interface IndexConstituent {
   symbol: string;
   name: string;
 }
+
+// Value Picks (Beaten Down Stocks)
+
+export interface RobinhoodHistorical {
+  begins_at: string;
+  close_price: string;
+  high_price: string;
+  low_price: string;
+  open_price: string;
+  volume: number;
+}
+
+export interface RobinhoodHistoricalResponse {
+  symbol: string;
+  historicals: RobinhoodHistorical[];
+}
+
+export interface RobinhoodFundamentals {
+  headquarters_city: string;
+  headquarters_state: string;
+  sector: string;
+  industry: string;
+  description: string;
+  market_cap: string;
+  pe_ratio: string | null;
+  dividend_yield: string | null;
+  high_52_weeks: string;
+  low_52_weeks: string;
+}
+
+export interface ValuePick {
+  symbol: string;
+  name: string;
+  price: number;
+  previousClose: number;
+  changePercent: number;
+  changeAmount: number;
+  high52Week: number;
+  drawdownPercent: number;
+  marketCap: number;
+  peRatio: number | null;
+  dividendYield: number | null;
+  sector: string;
+  industry: string;
+  description: string;
+}
+
+export interface ValuePicksData {
+  picks: ValuePick[];
+  totalScanned: number;
+  totalQualified: number;
+  fetchedAt: string;
+}
