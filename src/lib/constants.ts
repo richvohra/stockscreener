@@ -36,3 +36,8 @@ export const ROBINHOOD_FUNDAMENTALS_URL =
   "https://api.robinhood.com/fundamentals/";
 export const MIN_DRAWDOWN_PERCENT = 20;
 export const MIN_STOCK_PRICE = 10;
+
+// Top 10 Picks
+export const API_TOP_PICKS_PATH = "/api/stocks/top-picks";
+export const TOP_PICKS_POLLING_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+export const TOP_PICKS_COUNT = 10;

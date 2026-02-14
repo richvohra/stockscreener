@@ -9,6 +9,51 @@ import type {
   RobinhoodQuotesResponse,
 } from "@/lib/types";
 
+// Technical Analysis Utilities
+
+export function computeSMA(
+  closes: number[],
+  period: number
+): (number | null)[] {
+  const sma: (number | null)[] = [];
+  for (let i = 0; i < closes.length; i++) {
+    if (i < period - 1) {
+      sma.push(null);
+    } else {
+      let sum = 0;
+      for (let j = i - period + 1; j <= i; j++) {
+        sum += closes[j];
+      }
+      sma.push(sum / period);
+    }
+  }
+  return sma;
+}
+
+export type CrossoverSignal = "bullish" | "bearish" | null;
+
+export function detectCrossover(
+  sma5: (number | null)[],
+  sma20: (number | null)[]
+): { signal: CrossoverSignal; daysAgo: number | null } {
+  for (let i = sma5.length - 1; i >= 1; i--) {
+    const cur5 = sma5[i];
+    const cur20 = sma20[i];
+    const prev5 = sma5[i - 1];
+    const prev20 = sma20[i - 1];
+    if (cur5 === null || cur20 === null || prev5 === null || prev20 === null)
+      continue;
+
+    if (prev5 <= prev20 && cur5 > cur20) {
+      return { signal: "bullish", daysAgo: sma5.length - 1 - i };
+    }
+    if (prev5 >= prev20 && cur5 < cur20) {
+      return { signal: "bearish", daysAgo: sma5.length - 1 - i };
+    }
+  }
+  return { signal: null, daysAgo: null };
+}
+
 // In-memory cache for constituent lists (they rarely change)
 const constituentsCache: Record<
   string,

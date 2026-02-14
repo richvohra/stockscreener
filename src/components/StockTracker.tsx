@@ -8,6 +8,7 @@ import { IndexSection } from "./IndexSection";
 import { StockCardSkeleton } from "./StockCardSkeleton";
 import { StockChartModal } from "./StockChartModal";
 import { ValuePicks } from "./ValuePicks";
+import { TopPicks } from "./TopPicks";
 
 export function StockTracker() {
   const [data, setData] = useState<StockTrackerData | null>(null);
@@ -112,6 +113,9 @@ export function StockTracker() {
 
           {/* Beaten Down Value Picks */}
           <ValuePicks onClickChart={setChartSymbol} />
+
+          {/* Top 10 Picks */}
+          <TopPicks onClickChart={setChartSymbol} />
         </div>
       )}
 

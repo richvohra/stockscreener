@@ -366,3 +366,41 @@ export interface ValuePicksData {
   totalQualified: number;
   fetchedAt: string;
 }
+
+// Top 10 Picks (Highest Upside Potential)
+
+export interface ScoreBreakdown {
+  recoveryPotential: number;
+  momentum: number;
+  volumeConfirmation: number;
+  valuation: number;
+  marketCap: number;
+  recentMomentum: number;
+}
+
+export interface TopPick {
+  rank: number;
+  symbol: string;
+  name: string;
+  price: number;
+  previousClose: number;
+  changePercent: number;
+  changeAmount: number;
+  high52Week: number;
+  drawdownPercent: number;
+  marketCap: number;
+  peRatio: number | null;
+  dividendYield: number | null;
+  sector: string;
+  industry: string;
+  compositeScore: number;
+  scoreBreakdown: ScoreBreakdown;
+  reasoning: string;
+}
+
+export interface TopPicksData {
+  picks: TopPick[];
+  totalScanned: number;
+  totalCandidates: number;
+  fetchedAt: string;
+}

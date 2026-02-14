@@ -102,3 +102,10 @@ export function formatVolume(value: number): string {
   if (value >= 1e3) return `${(value / 1e3).toFixed(0)}K`;
   return value.toString();
 }
+
+export function getScoreColor(score: number): string {
+  if (score >= 75) return "bg-green-500";
+  if (score >= 60) return "bg-green-400";
+  if (score >= 45) return "bg-amber-400";
+  return "bg-red-400";
+}

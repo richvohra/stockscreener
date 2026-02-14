@@ -4,6 +4,8 @@ import {
   ROBINHOOD_QUOTES_URL,
   ROBINHOOD_FUNDAMENTALS_URL,
 } from "@/lib/constants";
+import { computeSMA, detectCrossover } from "@/lib/stocks";
+import type { CrossoverSignal } from "@/lib/stocks";
 
 export const dynamic = "force-dynamic";
 
@@ -14,49 +16,6 @@ interface HistPoint {
   high: number;
   low: number;
   volume: number;
-}
-
-function computeSMA(closes: number[], period: number): (number | null)[] {
-  const sma: (number | null)[] = [];
-  for (let i = 0; i < closes.length; i++) {
-    if (i < period - 1) {
-      sma.push(null);
-    } else {
-      let sum = 0;
-      for (let j = i - period + 1; j <= i; j++) {
-        sum += closes[j];
-      }
-      sma.push(sum / period);
-    }
-  }
-  return sma;
-}
-
-type CrossoverSignal = "bullish" | "bearish" | null;
-
-function detectCrossover(
-  sma5: (number | null)[],
-  sma20: (number | null)[]
-): { signal: CrossoverSignal; daysAgo: number | null } {
-  // Walk backwards to find most recent crossover
-  for (let i = sma5.length - 1; i >= 1; i--) {
-    const cur5 = sma5[i];
-    const cur20 = sma20[i];
-    const prev5 = sma5[i - 1];
-    const prev20 = sma20[i - 1];
-    if (cur5 === null || cur20 === null || prev5 === null || prev20 === null)
-      continue;
-
-    // Bullish: SMA5 crosses above SMA20
-    if (prev5 <= prev20 && cur5 > cur20) {
-      return { signal: "bullish", daysAgo: sma5.length - 1 - i };
-    }
-    // Bearish: SMA5 crosses below SMA20
-    if (prev5 >= prev20 && cur5 < cur20) {
-      return { signal: "bearish", daysAgo: sma5.length - 1 - i };
-    }
-  }
-  return { signal: null, daysAgo: null };
 }
 
 export async function GET(request: Request) {
