@@ -7,6 +7,58 @@ import {
 
 export const dynamic = "force-dynamic";
 
+interface HistPoint {
+  date: string;
+  close: number;
+  open: number;
+  high: number;
+  low: number;
+  volume: number;
+}
+
+function computeSMA(closes: number[], period: number): (number | null)[] {
+  const sma: (number | null)[] = [];
+  for (let i = 0; i < closes.length; i++) {
+    if (i < period - 1) {
+      sma.push(null);
+    } else {
+      let sum = 0;
+      for (let j = i - period + 1; j <= i; j++) {
+        sum += closes[j];
+      }
+      sma.push(sum / period);
+    }
+  }
+  return sma;
+}
+
+type CrossoverSignal = "bullish" | "bearish" | null;
+
+function detectCrossover(
+  sma5: (number | null)[],
+  sma20: (number | null)[]
+): { signal: CrossoverSignal; daysAgo: number | null } {
+  // Walk backwards to find most recent crossover
+  for (let i = sma5.length - 1; i >= 1; i--) {
+    const cur5 = sma5[i];
+    const cur20 = sma20[i];
+    const prev5 = sma5[i - 1];
+    const prev20 = sma20[i - 1];
+    if (cur5 === null || cur20 === null || prev5 === null || prev20 === null)
+      continue;
+
+    // Bullish: SMA5 crosses above SMA20
+    if (prev5 <= prev20 && cur5 > cur20) {
+      return { signal: "bullish", daysAgo: sma5.length - 1 - i };
+    }
+    // Bearish: SMA5 crosses below SMA20
+    if (prev5 >= prev20 && cur5 < cur20) {
+      return { signal: "bearish", daysAgo: sma5.length - 1 - i };
+    }
+  }
+  return { signal: null, daysAgo: null };
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const symbol = searchParams.get("symbol");
@@ -28,14 +80,19 @@ export async function GET(request: Request) {
   const interval = intervalMap[span] || "day";
 
   try {
-    // Fetch historicals, quote, and fundamentals in parallel
-    const [histRes, quoteRes, fundRes] = await Promise.all([
+    // Fetch historicals, quote, fundamentals, AND weekly historicals in parallel
+    const [histRes, quoteRes, fundRes, weeklyHistRes] = await Promise.all([
       fetch(
         `${ROBINHOOD_HISTORICALS_URL}${symbol}/?interval=${interval}&span=${span}`,
         { cache: "no-store" }
       ),
       fetch(`${ROBINHOOD_QUOTES_URL}${symbol}/`, { cache: "no-store" }),
       fetch(`${ROBINHOOD_FUNDAMENTALS_URL}${symbol}/`, { cache: "no-store" }),
+      // Always fetch weekly data for weekly crossover analysis
+      fetch(
+        `${ROBINHOOD_HISTORICALS_URL}${symbol}/?interval=week&span=year`,
+        { cache: "no-store" }
+      ),
     ]);
 
     if (!histRes.ok) {
@@ -48,24 +105,50 @@ export async function GET(request: Request) {
     const histData = await histRes.json();
     const quoteData = quoteRes.ok ? await quoteRes.json() : null;
     const fundData = fundRes.ok ? await fundRes.json() : null;
+    const weeklyHistData = weeklyHistRes.ok
+      ? await weeklyHistRes.json()
+      : null;
 
-    const points = (histData.historicals || []).map(
-      (h: {
+    const parseHistoricals = (
+      raw: {
         begins_at: string;
         close_price: string;
         open_price: string;
         high_price: string;
         low_price: string;
         volume: number;
-      }) => ({
+      }[]
+    ): HistPoint[] =>
+      raw.map((h) => ({
         date: h.begins_at,
         close: parseFloat(h.close_price),
         open: parseFloat(h.open_price),
         high: parseFloat(h.high_price),
         low: parseFloat(h.low_price),
         volume: h.volume,
-      })
-    );
+      }));
+
+    const points = parseHistoricals(histData.historicals || []);
+
+    // Compute SMAs on the chart points
+    const closes = points.map((p) => p.close);
+    const sma5 = computeSMA(closes, 5);
+    const sma20 = computeSMA(closes, 20);
+
+    // Detect daily crossover
+    const dailyCrossover = detectCrossover(sma5, sma20);
+
+    // Compute weekly SMAs and crossover
+    let weeklyCrossover: { signal: CrossoverSignal; weeksAgo: number | null } =
+      { signal: null, weeksAgo: null };
+    if (weeklyHistData?.historicals) {
+      const weeklyPoints = parseHistoricals(weeklyHistData.historicals);
+      const weeklyCloses = weeklyPoints.map((p) => p.close);
+      const weeklySma5 = computeSMA(weeklyCloses, 5);
+      const weeklySma20 = computeSMA(weeklyCloses, 20);
+      const wc = detectCrossover(weeklySma5, weeklySma20);
+      weeklyCrossover = { signal: wc.signal, weeksAgo: wc.daysAgo };
+    }
 
     const currentPrice = quoteData
       ? parseFloat(quoteData.last_trade_price)
@@ -79,12 +162,18 @@ export async function GET(request: Request) {
         )
       : 0;
 
+    // Current SMA values for display
+    const currentSma5 = sma5[sma5.length - 1];
+    const currentSma20 = sma20[sma20.length - 1];
+
     return NextResponse.json(
       {
         symbol,
         span,
         interval,
         points,
+        sma5,
+        sma20,
         currentPrice,
         previousClose,
         changeAmount: currentPrice - previousClose,
@@ -92,6 +181,28 @@ export async function GET(request: Request) {
           previousClose > 0
             ? ((currentPrice - previousClose) / previousClose) * 100
             : 0,
+        technicals: {
+          currentSma5,
+          currentSma20,
+          dailyCrossover: {
+            signal: dailyCrossover.signal,
+            periodsAgo: dailyCrossover.daysAgo,
+          },
+          weeklyCrossover: {
+            signal: weeklyCrossover.signal,
+            periodsAgo: weeklyCrossover.weeksAgo,
+          },
+          smaPosition:
+            currentSma5 !== null && currentSma20 !== null
+              ? currentSma5 > currentSma20
+                ? "bullish"
+                : "bearish"
+              : null,
+          priceVsSma20:
+            currentSma20 !== null
+              ? ((currentPrice - currentSma20) / currentSma20) * 100
+              : null,
+        },
         fundamentals: fundData
           ? {
               sector: fundData.sector || null,
